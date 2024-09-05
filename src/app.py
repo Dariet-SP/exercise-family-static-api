@@ -47,15 +47,21 @@ def get_all_members():
 @app.route('/member/<int:id>', methods=['GET'])
 def get_single_member(id):
     member = jackson_family.get_member(id)
-    return jsonify(member), 200
+    if member:
+        return jsonify({"member": member}), 200
+    else:
+        return jsonify({"error": "Member not found"}), 404
 
 @app.route('/member', methods=['POST'])
 def create_member():
     member = request.json
-    print("added", member)
-    jackson_family.add_member(member)
-    if member is not None:
-        return "member created", 200
+    if not member:
+        return jsonify({"error": "Invalid request body"}), 400
+    try:
+        jackson_family.add_member(member)
+        return jsonify({"message": "Member created successfully"}), 201
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
 @app.route('/member/<int:id>', methods=['DELETE'])
 def delete_single_member(id):
